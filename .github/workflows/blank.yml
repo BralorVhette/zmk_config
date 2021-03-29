@@ -1,36 +1,49 @@
-# This is a basic workflow to help you get started with Actions
+on: [push, pull_request, workflow_dispatch]
 
-name: CI
+name: Build
 
-# Controls when the action will run. 
-on:
-  # Triggers the workflow on push or pull request events but only for the main branch
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    container:
+      image: zmkfirmware/zmk-build-arm:2.4
+    name: Build
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
-
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
-        run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Cache west modules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-zephyr-modules
+        with:
+          path: |
+            modules/
+            tools/
+            zephyr/
+            bootloader/
+            zmk/
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('manifest-dir/west.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - name: West Init
+        run: west init -l config
+      - name: West Update
+        run: west update
+      - name: West Zephyr export
+        run: west zephyr-export
+      - name: West Build (Tidbit)
+        run: west build -s zmk/app -b nice_nano -- -DSHIELD=breeze -DZMK_CONFIG="${GITHUB_WORKSPACE}/config"
+      - name: Tidbit DTS File
+        if: ${{ always() }}
+        run: cat -n build/zephyr/nice_nano.dts.pre.tmp
+      - name: breeze Kconfig file
+        run: cat build/zephyr/.config | grep -v "^#" | grep -v "^$"
+      - name: Rename zmk.uf2
+        run: cp build/zephyr/zmk.uf2 tidbit_nice_nano.uf2
+      - name: Archive (Tidbit)
+        uses: actions/upload-artifact@v2
+        with:
+          name: firmware
+          path: breeze_nice_nano.uf2
