@@ -33,16 +33,16 @@ jobs:
         run: west update
       - name: West Zephyr export
         run: west zephyr-export
-      - name: West Build (Tidbit)
+      - name: West Build (breeze)
         run: west build -s zmk/app -b nice_nano -- -DSHIELD=breeze -DZMK_CONFIG="${GITHUB_WORKSPACE}/config"
-      - name: Tidbit DTS File
+      - name: breeze DTS File
         if: ${{ always() }}
         run: cat -n build/zephyr/nice_nano.dts.pre.tmp
       - name: breeze Kconfig file
         run: cat build/zephyr/.config | grep -v "^#" | grep -v "^$"
       - name: Rename zmk.uf2
-        run: cp build/zephyr/zmk.uf2 tidbit_nice_nano.uf2
-      - name: Archive (Tidbit)
+        run: cp build/zephyr/zmk.uf2 breeze_nice_nano.uf2
+      - name: Archive (breeze)
         uses: actions/upload-artifact@v2
         with:
           name: firmware
