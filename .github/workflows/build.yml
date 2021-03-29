@@ -12,7 +12,6 @@ jobs:
       fail-fast: false
       matrix:
         board:
-          - bluemicro840_v1
           - nice_nano
         shield:
           - breeze_left
