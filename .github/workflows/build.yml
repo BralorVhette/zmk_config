@@ -28,6 +28,7 @@ jobs:
           - board: dz60rgb_rev1
           - board: nice_nano
             shield: breeze_left
+          - board: nice_nano
             shield: breeze_right
           - board: proton_c
             shield: clueboard_california
