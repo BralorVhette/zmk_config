@@ -7,6 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: zmkfirmware/zmk-build-arm:2.4
+    name: Build
     steps:
       - name: Checkout
         uses: actions/checkout@v2
