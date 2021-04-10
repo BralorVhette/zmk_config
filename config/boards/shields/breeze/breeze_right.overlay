@@ -7,7 +7,7 @@
 #include "breeze.dtsi"
 
 &default_transform {
-	row-offset = <5>;
+	col-offset = <5>;
 };
 
 &kscan0 {
