@@ -37,7 +37,6 @@ RC(3,5) RC(3,4) RC(3,3) RC(3,2) RC(3,1) RC(3,0)                 RC(8,0) RC(8,1) 
 		label = "KSCAN";
 
 		diode-direction = "col2row";
-
                 row-gpios
 			= <&pro_micro_a 3  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
 			, <&pro_micro_a 2  (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>
