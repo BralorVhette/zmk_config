@@ -64,4 +64,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: firmware
-          path: sofle_right_nice_nano.uf2
+          path: breeze_right_nice_nano.uf2
