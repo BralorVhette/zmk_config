@@ -14,6 +14,8 @@ jobs:
         shield:
           - breeze_left
           - breeze_right
+          - sofle_v2_left
+          - sofle_v2_right
         cmake-args: [""]
     steps:
       - name: Checkout
@@ -39,29 +41,26 @@ jobs:
         run: west update
       - name: West Zephyr export
         run: west zephyr-export
-      - name: West Build (Breeze Left)
-        run: west build -s zmk/app -b nice_nano -- -DSHIELD=breeze_left -DZMK_CONFIG="${GITHUB_WORKSPACE}/config"
-      - name: Breeze DTS File
-        if: ${{ always() }}
-        run: cat -n build/zephyr/nice_nano.dts.pre.tmp
-      - name: Breeze Left Kconfig file
-        run: cat build/zephyr/.config | grep -v "^#" | grep -v "^$"
-      - name: Rename zmk.uf2
-        run: cp build/zephyr/zmk.uf2 breeze_left_nice_nano.uf2
-      - name: Archive (Breeze Left)
+      - name: Prepare variables
+        id: variables
+        run: |
+          SHIELD_ARG=
+          ARTIFACT_NAME="${{ matrix.board }}"
+          if [ -n "${{ matrix.shield }}" ]; then
+            SHIELD_ARG="-DSHIELD=${{ matrix.shield }}"
+            ARTIFACT_NAME="${ARTIFACT_NAME}-${{ matrix.shield }}"
+          fi
+          ARTIFACT_NAME="${ARTIFACT_NAME}-zmk"
+          echo ::set-output name=shield-arg::${SHIELD_ARG}
+          echo ::set-output name=artifact-name::${ARTIFACT_NAME}
+      - name: Build (west build)
+        run: west build -s app -b ${{ matrix.board }} -- ${{ steps.variables.outputs.shield-arg }} ${{ matrix.cmake-args }}
+      - name: Archive artifacts
+        if: ${{ !matrix.skip-archive }}
         uses: actions/upload-artifact@v2
         with:
-          name: firmware
-          path: breeze_left_nice_nano.uf2
-      - name: West Build (Breeze Right)
-        run: west build --pristine -s zmk/app -b nice_nano -- -DSHIELD=breeze_right -DZMK_CONFIG="${GITHUB_WORKSPACE}/config"
-
-      - name: Breeze Right Kconfig file
-        run: cat build/zephyr/.config | grep -v "^#" | grep -v "^$"
-      - name: Rename zmk.uf2
-        run: cp build/zephyr/zmk.uf2 breeze_right_nice_nano.uf2
-      - name: Archive (Breeze Right)
-        uses: actions/upload-artifact@v2
-        with:
-          name: firmware
-          path: breeze_right_nice_nano.uf2
+          name: "${{ steps.variables.outputs.artifact-name }}"
+          path: |
+            build/zephyr/zmk.hex
+            build/zephyr/zmk.uf2
+        continue-on-error: true
