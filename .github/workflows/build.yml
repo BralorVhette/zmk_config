@@ -14,8 +14,8 @@ jobs:
         shield:
           - breeze_left
           - breeze_right
-          - sofle_v2_left
-          - sofle_v2_right
+          - sofle_left
+          - sofle_right
         cmake-args: [""]
     steps:
       - name: Checkout
